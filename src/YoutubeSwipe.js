@@ -13,63 +13,20 @@ const {
     set,
     Value,
     event,
+    lessThan,
     interpolate,
     Extrapolate,
-    block,
-    and,
     greaterOrEq,
     lessOrEq,
-    onChange,
-    greaterThan,
-    lessThan,
     diffClamp,
     View: AnimatedView,
     Code: AnimatedCode,
-    Clock
 } = Animated
 
-const { ACTIVE, END } = State
+const { ACTIVE, END, UNDETERMINED } = State
 
 const VIDEO_CONTAINER_HEIGHT = 200
 const TRANSLATION_MIN_VALUE = height - 100
-
-function spring(dt, position, velocity, anchor, mass = 1, tension = 300) {
-    const dist = sub(position, anchor);
-    const acc = divide(multiply(-1, tension, dist), mass);
-    return set(velocity, add(velocity, multiply(dt, acc)));
-}
-
-function damping(dt, velocity, mass = 1, damping = 12) {
-    const acc = divide(multiply(-1, damping, velocity), mass);
-    return set(velocity, add(velocity, multiply(dt, acc)));
-}
-
-function interaction(gestureTranslation, gestureState) {
-    const dragging = new Value(0);
-    const start = new Value(0);
-    const position = new Value(0);
-    const velocity = new Value(0);
-
-    const clock = new Clock();
-    const dt = divide(diff(clock), 1000);
-
-    return cond(
-        eq(gestureState, State.ACTIVE),
-        [
-            cond(dragging, 0, [set(dragging, 1), set(start, position)]),
-            stopClock(clock),
-            dt,
-            set(position, add(start, gestureTranslation)),
-        ],
-        [
-            set(dragging, 0),
-            startClock(clock),
-            spring(dt, position, velocity, 0),
-            damping(dt, velocity),
-            set(position, add(position, multiply(velocity, dt))),
-        ]
-    );
-}
 
 export default class YoutubeSwipe extends React.Component {
 
@@ -113,17 +70,25 @@ export default class YoutubeSwipe extends React.Component {
 
                 </PanGestureHandler>
 
-
             </View>
         )
     }
 
     getTranslationYValue = () => {
-        const addY = add(this.offsetY, this.dragY)
+        let addY = add(this.offsetY, this.dragY)
+        addY = cond(lessOrEq(addY, TRANSLATION_MIN_VALUE), addY, TRANSLATION_MIN_VALUE)
+        addY = cond(greaterOrEq(addY, 0), addY, 0)
         const oneThirdOfScreenHeight = height / 3
-        let translationY = cond(eq(this.gestureState, ACTIVE), addY, cond(eq(this.gestureState, END), [
-            cond(lessThan(addY, oneThirdOfScreenHeight), set(this.offsetY, 0), set(this.offsetY, TRANSLATION_MIN_VALUE))
-        ]))
+        let translationY = cond(eq(this.gestureState, ACTIVE),
+            addY,
+            [
+                cond(
+                    lessThan(addY, oneThirdOfScreenHeight),
+                    set(this.offsetY, 0),
+                    set(this.offsetY, TRANSLATION_MIN_VALUE)
+                ),
+            ]
+        )
         translationY = diffClamp(translationY, 0, TRANSLATION_MIN_VALUE)
         return translationY
     }
