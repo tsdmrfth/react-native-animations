@@ -14,8 +14,7 @@ const { height } = Dimensions.get('window')
 export default class VideoPlayerProvider extends React.PureComponent {
 
     state = {
-        video: null,
-        num: 0
+        video: null
     }
 
     constructor(props) {
@@ -52,7 +51,7 @@ export default class VideoPlayerProvider extends React.PureComponent {
         )
     }
 
-    setVideo = video => this.setState({ video, num: this.state.num === 0 ? 1 : 0 }, this.showVideoDetail)
+    setVideo = video => this.setState({ video }, this.showVideoDetail)
 
     renderInside = () => {
         const { video } = this.state
@@ -63,7 +62,7 @@ export default class VideoPlayerProvider extends React.PureComponent {
     }
 
     showVideoDetail = () => timing(this.videoContainerTranslateY, {
-        toValue: this.state.num,
+        toValue: this.state.video ? 1 : 0,
         duration: 500,
         easing: Easing.inOut(Easing.ease),
     }).start()
