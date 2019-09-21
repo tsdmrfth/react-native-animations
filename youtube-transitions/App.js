@@ -1,9 +1,9 @@
 import { AppLoading } from 'expo';
 import { Asset } from 'expo-asset';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
+import VideoPlayerProvider from './src/components/VideoPlayerProvider';
 import videos from './src/components/videos';
-import YoutubeSwipe from './src/YoutubeSwipe';
 
 console.disableYellowBox = true
 
@@ -28,9 +28,8 @@ const App = () => {
 
 	if (isAppReady) {
 		return (
-			<View style={styles.containerStyle}>
-				<YoutubeSwipe />
-			</View>
+			<VideoPlayerProvider>
+			</VideoPlayerProvider>
 		)
 	}
 
