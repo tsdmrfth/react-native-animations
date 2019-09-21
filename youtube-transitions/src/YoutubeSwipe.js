@@ -1,7 +1,7 @@
 import React from 'react';
 import { Dimensions, View } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
-import Animated from "react-native-reanimated";
+import Animated, { Easing } from "react-native-reanimated";
 
 const { width, height } = Dimensions.get("window")
 const {
@@ -21,6 +21,17 @@ const {
     diffClamp,
     View: AnimatedView,
     Code: AnimatedCode,
+    Clock,
+    timing,
+    startClock,
+    stopClock,
+    clockRunning,
+    block,
+    debug,
+    onChange,
+    neq,
+    defined,
+    abs
 } = Animated
 
 const { ACTIVE, END, UNDETERMINED } = State
@@ -28,22 +39,79 @@ const { ACTIVE, END, UNDETERMINED } = State
 const VIDEO_CONTAINER_HEIGHT = 200
 const TRANSLATION_MIN_VALUE = height - 100
 
+function runTiming(clock, value, dest) {
+    const state = {
+        finished: new Value(0),
+        position: new Value(0),
+        time: new Value(0),
+        frameTime: new Value(0),
+    }
+
+    const config = {
+        duration: 400,
+        toValue: dest,
+        easing: Easing.elastic(1),
+    }
+
+    return block([
+        cond(clockRunning(clock), 0, [
+            set(state.finished, 0),
+            set(state.time, 0),
+            set(state.position, value),
+            set(state.frameTime, 0),
+            set(config.toValue, dest),
+            startClock(clock),
+        ]),
+        timing(clock, state, config),
+        cond(state.finished, stopClock(clock)),
+        state.position,
+    ])
+}
+
 export default class YoutubeSwipe extends React.Component {
 
     constructor(props) {
         super(props)
-        this.dragY = new Value(0)
-        this.offsetY = new Value(0)
-        this.translationY = new Value(0)
-        this.gestureState = new Value(-1)
+
+        const dragY = new Value(0)
+        const prevDragY = new Value(0)
+        const translationY = new Value(0)
+        const gestureState = new Value(-1)
+
         this.onGestureEvent = event([{
             nativeEvent: {
-                translationY: this.dragY,
-                state: this.gestureState,
+                translationY: dragY,
+                state: gestureState,
             },
         }])
 
-        this.translationY = this.getTranslationYValue()
+        const _translationY = new Value()
+        const oneThirdOfScreenHeight = height / 3
+        const finalPoint = cond(
+            lessThan(dragY, 0),
+            cond(lessOrEq(abs(dragY), oneThirdOfScreenHeight), TRANSLATION_MIN_VALUE, 0),
+            cond(lessOrEq(dragY, oneThirdOfScreenHeight), 0, TRANSLATION_MIN_VALUE)
+        )
+        const clock = new Clock()
+
+        this.translationY = cond(
+            eq(gestureState, ACTIVE),
+            [
+                stopClock(clock),
+                set(_translationY, add(_translationY, sub(dragY, prevDragY))),
+                set(prevDragY, dragY),
+                _translationY
+            ],
+            [
+                set(prevDragY, 0),
+                set(
+                    _translationY,
+                    cond(defined(_translationY), [
+                        runTiming(clock, _translationY, 0)
+                    ], 0)
+                )
+            ]
+        )
         this.videoContainerHeight = this.getVideoContainerHeight()
     }
 
@@ -72,25 +140,6 @@ export default class YoutubeSwipe extends React.Component {
 
             </View>
         )
-    }
-
-    getTranslationYValue = () => {
-        let addY = add(this.offsetY, this.dragY)
-        addY = cond(lessOrEq(addY, TRANSLATION_MIN_VALUE), addY, TRANSLATION_MIN_VALUE)
-        addY = cond(greaterOrEq(addY, 0), addY, 0)
-        const oneThirdOfScreenHeight = height / 3
-        let translationY = cond(eq(this.gestureState, ACTIVE),
-            addY,
-            [
-                cond(
-                    lessThan(addY, oneThirdOfScreenHeight),
-                    set(this.offsetY, 0),
-                    set(this.offsetY, TRANSLATION_MIN_VALUE)
-                ),
-            ]
-        )
-        translationY = diffClamp(translationY, 0, TRANSLATION_MIN_VALUE)
-        return translationY
     }
 
     getVideoContainerHeight = () => {
