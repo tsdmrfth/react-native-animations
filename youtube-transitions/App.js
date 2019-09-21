@@ -2,6 +2,7 @@ import { AppLoading } from 'expo';
 import { Asset } from 'expo-asset';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
+import { HomePage } from './src/components/HomePage';
 import VideoPlayerProvider from './src/components/VideoPlayerProvider';
 import videos from './src/components/videos';
 
@@ -29,6 +30,7 @@ const App = () => {
 	if (isAppReady) {
 		return (
 			<VideoPlayerProvider>
+				<HomePage />
 			</VideoPlayerProvider>
 		)
 	}
