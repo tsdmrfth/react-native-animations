@@ -19,7 +19,10 @@ const {
     spring,
     stopClock,
     startClock,
-    debug
+    debug,
+    lessOrEq,
+    greaterOrEq,
+    and
 } = Animated
 const { END } = State
 
@@ -66,7 +69,7 @@ export default class VideoDetail extends React.Component {
         const velocityY = new Value(0)
         const clock = new Clock()
         const oneThirdOfScreenHeight = height / 3
-        const addY = add(translateY, offsetY)
+        const addY = add(offsetY, translateY)
         const finalPoint = cond(lessThan(addY, oneThirdOfScreenHeight), 0, height - 100)
 
         this.onGestureEvent = event(
@@ -84,15 +87,17 @@ export default class VideoDetail extends React.Component {
         this.translationY = cond(
             eq(gestureState, END),
             [
-                set(translateY, runSpring(clock, add(translateY, offsetY), finalPoint, velocityY)),
-                set(offsetY, translateY),
-                translateY
+                cond(greaterOrEq(addY, 0), [
+                    set(translateY, runSpring(clock, addY, finalPoint, velocityY)),
+                    set(offsetY, translateY),
+                    translateY
+                ])
             ],
             [
                 cond(clockRunning(clock), [
                     stopClock(clock)
                 ]),
-                add(offsetY, translateY)
+                cond(greaterOrEq(addY, 0), addY, 0)
             ]
         )
     }
