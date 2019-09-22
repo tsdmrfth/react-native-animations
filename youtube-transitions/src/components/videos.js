@@ -22,6 +22,9 @@ const videos: Video[] = [
         avatar: require('../../assets/avatars/1.png'),
         views: 189,
         published: moment().subtract(5, 'days'),
+        likes: 90,
+        dislikes: 10,
+        subscribers: 8982199
     },
     {
         id: '1',
@@ -32,6 +35,9 @@ const videos: Video[] = [
         avatar: require('../../assets/avatars/1.png'),
         views: 63,
         published: moment().subtract(10, 'days'),
+        likes: 1290,
+        dislikes: 19,
+        subscribers: 8982199
     },
     {
         id: '2',
@@ -42,6 +48,9 @@ const videos: Video[] = [
         avatar: require('../../assets/avatars/1.png'),
         views: 216,
         published: moment().subtract(17, 'days'),
+        likes: 901,
+        dislikes: 20,
+        subscribers: 8982199
     },
     {
         id: '4',
@@ -52,6 +61,9 @@ const videos: Video[] = [
         avatar: require('../../assets/avatars/1.png'),
         views: 273,
         published: moment().subtract(31, 'days'),
+        likes: 8781,
+        dislikes: 98,
+        subscribers: 8982199
     },
 ];
 

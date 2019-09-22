@@ -3,6 +3,7 @@ import React from 'react';
 import { Dimensions } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
+import VideoContent from './VideoContent';
 
 const { height } = Dimensions.get('window')
 
@@ -129,6 +130,8 @@ export default class VideoPlayer extends React.Component {
                         source={video.video}
                         resizeMode={Video.RESIZE_MODE_COVER}
                         style={{ width: '100%', height: 200 }} />
+
+                    <VideoContent video={video} />
 
                 </AnimatedView>
 
