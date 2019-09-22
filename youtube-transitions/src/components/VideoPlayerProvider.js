@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import React from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import Animated, { Easing } from 'react-native-reanimated';
@@ -57,7 +58,7 @@ export default class VideoPlayerProvider extends React.PureComponent {
         const { video } = this.state
 
         if (video) {
-            return <VideoDetail />
+            return <VideoDetail video={video} />
         }
     }
 
@@ -72,5 +73,6 @@ export default class VideoPlayerProvider extends React.PureComponent {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        marginTop: Constants.statusBarHeight
     },
 })

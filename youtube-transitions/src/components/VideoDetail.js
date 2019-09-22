@@ -1,3 +1,4 @@
+import { Video } from 'expo-av';
 import React from 'react';
 import { Dimensions } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
@@ -22,9 +23,11 @@ const {
     debug,
     lessOrEq,
     greaterOrEq,
-    and
+    and,
+    createAnimatedComponent
 } = Animated
 const { END } = State
+const AnimatedVideo = createAnimatedComponent(Video)
 
 function runSpring(clock, value, dest, velocity) {
     const state = {
@@ -104,26 +107,44 @@ export default class VideoDetail extends React.Component {
 
     render() {
         const { onGestureEvent } = this
+        const { video } = this.props
+        const { containerStyle } = styles
+        const containerAnimatedStyle = {
+            transform: [
+                {
+                    translateY: this.translationY
+                }
+            ],
+        }
 
         return (
             <PanGestureHandler
                 onGestureEvent={onGestureEvent}
                 onHandlerStateChange={onGestureEvent}>
-                <AnimatedView
-                    style={{
-                        backgroundColor: 'gray',
-                        width: '100%',
-                        height: '100%',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        alignSelf: 'center',
-                        transform: [
-                            { translateY: this.translationY }
-                        ]
-                    }}>
+
+                <AnimatedView style={[containerStyle, containerAnimatedStyle]}>
+
+                    <Video
+                        useNativeControls
+                        source={video.video}
+                        resizeMode={Video.RESIZE_MODE_COVER}
+                        style={{ width: '100%', height: 200 }} />
+
                 </AnimatedView>
+
             </PanGestureHandler>
         )
     }
 
+}
+
+const styles = {
+    containerStyle: {
+        backgroundColor: 'gray',
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
+        alignSelf: 'center',
+        position: 'absolute'
+    },
 }
