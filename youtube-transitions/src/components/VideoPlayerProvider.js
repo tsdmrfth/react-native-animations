@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import React from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import Animated, { Easing } from 'react-native-reanimated';
-import VideoDetail from './VideoDetail';
+import VideoPlayer from './VideoPlayer';
 import VideoPlayerContext from './VideoPlayerContext';
 
 const {
@@ -58,7 +58,7 @@ export default class VideoPlayerProvider extends React.PureComponent {
         const { video } = this.state
 
         if (video) {
-            return <VideoDetail video={video} />
+            return <VideoPlayer video={video} />
         }
     }
 

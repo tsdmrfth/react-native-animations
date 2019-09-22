@@ -62,7 +62,7 @@ function runSpring(clock, value, dest, velocity) {
     ]
 }
 
-export default class VideoDetail extends React.Component {
+export default class VideoPlayer extends React.Component {
 
     constructor(props) {
         super(props)
