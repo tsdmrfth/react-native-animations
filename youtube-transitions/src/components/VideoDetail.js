@@ -89,6 +89,9 @@ export default class VideoDetail extends React.Component {
                 translateY
             ],
             [
+                cond(clockRunning(clock), [
+                    stopClock(clock)
+                ]),
                 add(offsetY, translateY)
             ]
         )
