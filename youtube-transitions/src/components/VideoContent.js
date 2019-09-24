@@ -1,6 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Dimensions, Image, ScrollView, Text, View } from 'react-native';
+import { Dimensions, Image, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import videos from './videos';
 import VideoThumnail from './VideoThumnail';
 
@@ -20,7 +21,8 @@ export default class VideoContent extends React.Component {
             seperatorLineStyle,
             avatarStyle,
             usernameTextStyle,
-            userInfoContainerStyle
+            userInfoContainerStyle,
+            upNextTitleStyle
         } = styles
         const {
             video: {
@@ -31,19 +33,23 @@ export default class VideoContent extends React.Component {
                 dislikes,
                 avatar,
                 subscribers
-            }
+            },
+            style
         } = this.props
 
         return (
             <View style={containerStyle}>
 
-                <ScrollView showsVerticalScrollIndicator={false}>
+                <Animated.ScrollView
+                    style={style}
+                    showsVerticalScrollIndicator={false}>
+
                     <Text style={videoTitleTextStyle}>
                         {title}
                     </Text>
 
                     <Text style={grayTextStyle}>
-                        {views}
+                        {`${views} views`}
                     </Text>
 
                     <View style={[likeButtonContainerStyle, rowContainerStyle]}>
@@ -81,21 +87,25 @@ export default class VideoContent extends React.Component {
                             </Text>
 
                             <Text style={grayTextStyle}>
-                                {subscribers}
+                                {`${subscribers} subscribers`}
                             </Text>
                         </View>
 
                     </View>
 
                     <View style={seperatorLineStyle} />
+
+                    <Text style={upNextTitleStyle}>Up next</Text>
+
                     {this.renderVideos()}
-                </ScrollView>
+
+                </Animated.ScrollView>
 
             </View>
         )
     }
 
-    renderVideos = () => (videos.map(video => <VideoThumnail video={video} />))
+    renderVideos = () => (videos.map(video => <VideoThumnail key={video.id} video={video} />))
 
 }
 
@@ -104,11 +114,13 @@ const styles = {
         width: '100%',
         height,
         backgroundColor: 'white',
-        padding: 10
+        padding: 10,
+        paddingTop: 0
     },
     videoTitleTextStyle: {
         fontSize: 15,
-        marginBottom: 3
+        marginBottom: 3,
+        marginTop: 10
     },
     grayTextStyle: {
         fontSize: 13,
@@ -146,5 +158,9 @@ const styles = {
     userInfoContainerStyle: {
         marginTop: 15,
         marginLeft: 5
+    },
+    upNextTitleStyle: {
+        borderColor: 'gray',
+        padding: 16,
     }
 }

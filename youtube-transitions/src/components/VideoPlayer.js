@@ -5,7 +5,7 @@ import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 import VideoContent from './VideoContent';
 
-const { height } = Dimensions.get('window')
+const { height, width } = Dimensions.get('window')
 
 const {
     View: AnimatedView,
@@ -25,10 +25,13 @@ const {
     lessOrEq,
     greaterOrEq,
     and,
-    createAnimatedComponent
+    createAnimatedComponent,
+    interpolate,
+    Extrapolate
 } = Animated
 const { END } = State
 const AnimatedVideo = createAnimatedComponent(Video)
+const AnimatedVideoContent = createAnimatedComponent(VideoContent)
 
 function runSpring(clock, value, dest, velocity) {
     const state = {
@@ -104,18 +107,35 @@ export default class VideoPlayer extends React.Component {
                 cond(greaterOrEq(addY, 0), addY, 0)
             ]
         )
+        this.videoContentOpacity = interpolate(this.translationY, {
+            inputRange: [0, height - 200],
+            outputRange: [1, 0],
+            extrapolate: Extrapolate.CLAMP,
+        })
     }
 
     render() {
         const { onGestureEvent } = this
         const { video } = this.props
-        const { containerStyle } = styles
+        const {
+            containerStyle,
+            videoContentContainerStyle
+        } = styles
         const containerAnimatedStyle = {
             transform: [
                 {
                     translateY: this.translationY
                 }
-            ],
+            ]
+        }
+        const videoContentAnimatedStyle = {
+            opacity: this.videoContentOpacity
+        }
+        const videoContentContainerAnimatedStyle = {
+            width: interpolate(this.translationY, {
+                inputRange: [0, height],
+                outputRange: [width, width - 40]
+            })
         }
 
         return (
@@ -123,15 +143,19 @@ export default class VideoPlayer extends React.Component {
                 onGestureEvent={onGestureEvent}
                 onHandlerStateChange={onGestureEvent}>
 
-                <AnimatedView style={[containerStyle, containerAnimatedStyle]}>
+                <AnimatedView style={[containerStyle, containerAnimatedStyle, videoContentContainerAnimatedStyle]}>
 
                     <Video
                         useNativeControls
                         source={video.video}
                         resizeMode={Video.RESIZE_MODE_COVER}
-                        style={{ width: '100%', height: 200 }} />
+                        style={{ width: '100%', height: 200, borderWidth: 1, borderColor: 'lightgray', borderRadius: 5 }} />
 
-                    <VideoContent video={video} />
+                    <AnimatedView style={[{ backgroundColor: 'white' }, videoContentContainerAnimatedStyle]}>
+                        <VideoContent
+                            video={video}
+                            style={videoContentAnimatedStyle} />
+                    </AnimatedView>
 
                 </AnimatedView>
 
@@ -143,11 +167,15 @@ export default class VideoPlayer extends React.Component {
 
 const styles = {
     containerStyle: {
-        backgroundColor: 'gray',
+        backgroundColor: 'white',
         width: '100%',
         height: '100%',
         alignItems: 'center',
         alignSelf: 'center',
         position: 'absolute'
     },
+    videoContentContainerStyle: {
+        backgroundColor: 'white',
+        width: '100%'
+    }
 }
