@@ -27,11 +27,16 @@ const {
     and,
     createAnimatedComponent,
     interpolate,
-    Extrapolate
+    Extrapolate,
+    defined,
+    diffClamp
 } = Animated
 const { END } = State
 const AnimatedVideo = createAnimatedComponent(Video)
 const AnimatedVideoContent = createAnimatedComponent(VideoContent)
+
+const MINI_PLAYER_HEIGHT = 64
+const MAX_TRANSLATION_Y_POSITION = height - 2 * MINI_PLAYER_HEIGHT
 
 function runSpring(clock, value, dest, velocity) {
     const state = {
@@ -77,7 +82,7 @@ export default class VideoPlayer extends React.Component {
         const clock = new Clock()
         const oneThirdOfScreenHeight = height / 3
         const addY = add(offsetY, translateY)
-        const finalPoint = cond(lessThan(addY, oneThirdOfScreenHeight), 0, height - 100)
+        const finalPoint = cond(lessThan(addY, oneThirdOfScreenHeight), 0, MAX_TRANSLATION_Y_POSITION)
 
         this.onGestureEvent = event(
             [
@@ -107,6 +112,24 @@ export default class VideoPlayer extends React.Component {
                 cond(greaterOrEq(addY, 0), addY, 0)
             ]
         )
+        this.translationY = interpolate(this.translationY, {
+            inputRange: [0, MAX_TRANSLATION_Y_POSITION],
+            outputRange: [0, MAX_TRANSLATION_Y_POSITION],
+            extrapolate: Extrapolate.CLAMP,
+        })
+        this.containerWidth = interpolate(this.translationY, {
+            inputRange: [0, height],
+            outputRange: [width, width - 40]
+        })
+        this.containerHeight = interpolate(this.translationY, {
+            inputRange: [0, height],
+            outputRange: [height, 100],
+            extrapolate: Extrapolate.CLAMP,
+        })
+        this.containerShadowOpacity = interpolate(this.translationY, {
+            inputRange: [0, height - MAX_TRANSLATION_Y_POSITION],
+            outputRange: [0, 1]
+        })
         this.videoContentOpacity = interpolate(this.translationY, {
             inputRange: [0, height - 200],
             outputRange: [1, 0],
@@ -126,16 +149,14 @@ export default class VideoPlayer extends React.Component {
                 {
                     translateY: this.translationY
                 }
-            ]
+            ],
+            // top: this.translationY,
+            width: this.containerWidth,
+            shadowOpacity: this.containerShadowOpacity,
         }
+
         const videoContentAnimatedStyle = {
-            opacity: this.videoContentOpacity
-        }
-        const videoContentContainerAnimatedStyle = {
-            width: interpolate(this.translationY, {
-                inputRange: [0, height],
-                outputRange: [width, width - 40]
-            })
+            // opacity: this.videoContentOpacity,
         }
 
         return (
@@ -143,18 +164,30 @@ export default class VideoPlayer extends React.Component {
                 onGestureEvent={onGestureEvent}
                 onHandlerStateChange={onGestureEvent}>
 
-                <AnimatedView style={[containerStyle, containerAnimatedStyle, videoContentContainerAnimatedStyle]}>
+                <AnimatedView style={[containerStyle, containerAnimatedStyle]}>
 
-                    <Video
-                        useNativeControls
-                        source={video.video}
-                        resizeMode={Video.RESIZE_MODE_COVER}
-                        style={{ width: '100%', height: 200, borderWidth: 1, borderColor: 'lightgray', borderRadius: 5 }} />
+                    <AnimatedView
+                        // useNativeControls
+                        // source={video.video}
+                        // resizeMode={Video.RESIZE_MODE_COVER}
+                        style={{
+                            width: '100%',
+                            height: 200,
+                            backgroundColor: '#636e72'
+                        }}/>
 
-                    <AnimatedView style={[{ backgroundColor: 'white' }, videoContentContainerAnimatedStyle]}>
-                        <VideoContent
-                            video={video}
-                            style={videoContentAnimatedStyle} />
+                    <AnimatedView
+                        style={[{
+                            backgroundColor: 'white',
+                            width: '100%',
+                            height: this.containerHeight,
+                            borderWidth: 1,
+                            marginBottom: interpolate(this.translationY, {
+                                inputRange: [0, height],
+                                outputRange: [0, 20]
+                            }),
+                        }, videoContentAnimatedStyle]}>
+                        <VideoContent video={video}/>
                     </AnimatedView>
 
                 </AnimatedView>
@@ -168,11 +201,16 @@ export default class VideoPlayer extends React.Component {
 const styles = {
     containerStyle: {
         backgroundColor: 'white',
-        width: '100%',
         height: '100%',
         alignItems: 'center',
         alignSelf: 'center',
-        position: 'absolute'
+        position: 'absolute',
+        shadowColor: 'darkgray',
+        shadowOffset: {
+            width: 0.6,
+            height: 0.6
+        },
+        shadowRadius: 2,
     },
     videoContentContainerStyle: {
         backgroundColor: 'white',
