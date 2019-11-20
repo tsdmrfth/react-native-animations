@@ -1,5 +1,5 @@
 import * as React from "react";
-import {Image, StyleSheet,} from "react-native";
+import {Image, StyleSheet} from "react-native";
 import Animated from "react-native-reanimated";
 import {Album, HEADER_DELTA, MAX_HEADER_HEIGHT} from "./Model";
 import {BUTTON_HEIGHT} from "./ShufflePlay";
